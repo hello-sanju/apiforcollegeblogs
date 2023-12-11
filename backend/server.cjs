@@ -117,7 +117,15 @@ mongoose
       res.status(500).json({ error: 'Internal server error' });
     }
   });
-  
+  app.post('/api/authenticate', (req, res) => {
+  const { password } = req.body;
+  // Replace 'yourSecretPassword' with your actual password
+  if (password === 'Sanjay@940660') {
+    res.json({ authenticated: true });
+  } else {
+    res.json({ authenticated: false });
+  }
+});
   app.get('/api/projects/category/:category', async (req, res) => {
     try {
       const category = req.params.category;
