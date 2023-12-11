@@ -89,7 +89,31 @@ mongoose
     additionalDetails: [String],
     // Add more fields as needed
   });
-  
+  const UserProfile = mongoose.model('userprofiles', {
+  email: String,
+  username: String,
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point',
+    },
+    coordinates: [Number],
+  },
+  lastSignInAt: Date,
+});
+
+// Add a new endpoint to fetch all user profiles
+app.get('/api/userprofiles', async (req, res) => {
+  try {
+    const userProfiles = await UserProfile.find();
+    res.json(userProfiles);
+  } catch (error) {
+    console.error('Error fetching user profiles:', error);
+    res.status(500).json({ error: 'Error fetching user profiles' });
+  }
+});
+
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
   
   app.get('/api/certifications', async (req, res) => {
