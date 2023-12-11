@@ -126,6 +126,27 @@ mongoose
     res.json({ authenticated: false });
   }
 });
+// Fetch feedbacks and queries after successful authentication
+app.get('/api/feedbacks', async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find();
+    res.json(feedbacks);
+  } catch (error) {
+    console.error('Error fetching feedbacks:', error);
+    res.status(500).json({ error: 'Error fetching feedbacks' });
+  }
+});
+
+app.get('/api/queries', async (req, res) => {
+  try {
+    const queries = await Query.find();
+    res.json(queries);
+  } catch (error) {
+    console.error('Error fetching queries:', error);
+    res.status(500).json({ error: 'Error fetching queries' });
+  }
+});
+
   app.get('/api/projects/category/:category', async (req, res) => {
     try {
       const category = req.params.category;
