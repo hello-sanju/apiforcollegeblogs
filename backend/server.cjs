@@ -89,6 +89,11 @@ mongoose
     additionalDetails: [String],
     // Add more fields as needed
   });
+const UserDetail = mongoose.model('userdetails', {
+  fullName: String,
+  wantToCollaborate: Boolean,
+  contactNumber: String,
+});
   const UserProfile = mongoose.model('userprofiles', {
   email: String,
   username: String,
@@ -125,7 +130,25 @@ app.get('/api/userprofiles', async (req, res) => {
       res.status(500).json({ error: 'Error fetching certifications' });
     }
   });
-  
+  app.post('/api/submit-contact', async (req, res) => {
+  try {
+    const { fullName, wantToCollaborate, contactNumber } = req.body;
+
+    // Save user details to the database
+    const newUserDetail = new UserDetail({ fullName, wantToCollaborate, contactNumber });
+    await newUserDetail.save();
+
+    // Display admin information to the user
+    const adminInfo = {
+      admin: 'Sanjay Patidar',
+      contactNumber: '9131743250',
+      address: 'Indore, India (458220)',
+    };
+    res.status(201).json({ message: 'Contact submitted successfully', adminInfo });
+  } catch (error) {
+    res.status(500).json({ error: 'Error submitting contact' });
+  }
+});
   app.get('/api/certifications/:title', async (req, res) => {
     try {
       const title = req.params.title;
