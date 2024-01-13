@@ -149,6 +149,17 @@ app.get('/api/userprofiles', async (req, res) => {
     res.status(500).json({ error: 'Error submitting contact' });
   }
 });
+
+app.get('/api/userdetails', async (req, res) => {
+  try {
+    const userDetails = await UserDetail.find();
+    res.json(userDetails);
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+    res.status(500).json({ error: 'Error fetching user details' });
+  }
+});
+
   app.get('/api/certifications/:title', async (req, res) => {
     try {
       const title = req.params.title;
