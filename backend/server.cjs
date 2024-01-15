@@ -178,16 +178,17 @@ app.get('/api/userdetails', async (req, res) => {
     res.status(500).json({ error: 'Error fetching user details' });
   }
 });
-// Add the endpoint to fetch the last user visit
+// Modify the endpoint to fetch the last user visit
 app.get('/api/uservisited/last', async (req, res) => {
   try {
-    const lastVisited = await UserVisited.findOne({}, {}, { sort: { visitedAt: -1 } });
+    const lastVisited = await UserVisited.findOne({}, { location: 1, visitedAt: 1 }, { sort: { visitedAt: -1 } });
     res.json(lastVisited || null); // Return JSON response or null if no visit recorded
   } catch (error) {
     console.error('Error fetching last user visit:', error);
     res.status(500).json({ error: 'Error fetching last user visit' });
   }
 });
+
 
 // Add the calculateDistance function
 function calculateDistance(coord1, coord2) {
