@@ -186,8 +186,7 @@ app.get('/api/uservisited/last', async (req, res) => {
   }
 });
 
-
-
+// Add the endpoint to save user visit
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
@@ -204,7 +203,6 @@ app.post('/api/uservisited', async (req, res) => {
     res.status(500).json({ error: 'Error saving user location' });
   }
 });
-
 
   app.get('/api/certifications/:title', async (req, res) => {
     try {
