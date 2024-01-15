@@ -179,32 +179,45 @@ app.get('/api/userdetails', async (req, res) => {
     res.status(500).json({ error: 'Error fetching user details' });
   }
 });
+// Update the /api/uservisited endpoint
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
 
     // Ensure coordinates are present and not empty
     const coordinates = Array.isArray(location.coordinates) && location.coordinates.length === 2
-      ? location.coordinates
+      ? location.coordinates.map(coord => parseFloat(coord)) // Convert coordinates to numbers
       : [];
 
-    const newUserVisited = new UserVisited({
-      location: {
-        type: 'Point',
-        coordinates: coordinates,
-      },
-      timestamp: new Date(),
-    });
+    // Fetch the last visit
+    const lastVisited = await UserVisited.findOne({}, {}, { sort: { visitedAt: -1 } });
 
-    await newUserVisited.save();
+    // Check if the last visit is within a certain time frame (e.g., 5 minutes)
+    const timeFrameInMinutes = 5;
+    const currentTime = new Date();
+    const withinTimeFrame = lastVisited && currentTime - lastVisited.visitedAt <= timeFrameInMinutes * 60 * 1000;
 
-    res.json({ message: 'User location saved successfully' });
+    // If there is no last visit or it's outside the time frame, save the new visit
+    if (!lastVisited || !withinTimeFrame) {
+      const newUserVisited = new UserVisited({
+        location: {
+          type: 'Point',
+          coordinates: coordinates,
+        },
+        visitedAt: currentTime,
+      });
+
+      await newUserVisited.save();
+      res.json({ message: 'User location saved successfully' });
+    } else {
+      // If there's a recent visit, do not save a new one
+      res.json({ message: 'User already visited recently' });
+    }
   } catch (error) {
     console.error('Error saving user location:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 // Add the endpoint to fetch the last user visit
 app.get('/api/uservisited/last', async (req, res) => {
   try {
@@ -217,32 +230,6 @@ app.get('/api/uservisited/last', async (req, res) => {
 });
 
 
-// Update the /api/uservisited endpoint
-app.post('/api/uservisited', async (req, res) => {
-  try {
-    const { location } = req.body;
-
-    // Ensure coordinates are present and not empty
-    const coordinates = Array.isArray(location.coordinates) && location.coordinates.length === 2
-      ? location.coordinates.map(coord => parseFloat(coord)) // Convert coordinates to numbers
-      : [];
-
-    const newUserVisited = new UserVisited({
-      location: {
-        type: 'Point',
-        coordinates: coordinates,
-      },
-      visitedAt: new Date(),
-    });
-
-    await newUserVisited.save();
-
-    res.json({ message: 'User location saved successfully' });
-  } catch (error) {
-    console.error('Error saving user location:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
   app.post('/api/authenticate', (req, res) => {
   const { password } = req.body;
   // Replace 'yourSecretPassword' with your actual password
