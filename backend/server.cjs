@@ -179,6 +179,7 @@ app.get('/api/userdetails', async (req, res) => {
 app.get('/api/uservisited/last', async (req, res) => {
   try {
     const lastVisited = await UserVisited.findOne({}, {}, { sort: { visitedAt: -1 } });
+    console.log('Last user visit:', lastVisited); // Log the last user visit
     res.json(lastVisited); // Return JSON response
   } catch (error) {
     console.error('Error fetching last user visit:', error);
@@ -190,6 +191,7 @@ app.get('/api/uservisited/last', async (req, res) => {
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
+    console.log('Received location:', location); // Log the received location
     
     // Create a new UserVisited record
     const newUserVisited = new UserVisited({ location, visitedAt: new Date() });
@@ -203,7 +205,6 @@ app.post('/api/uservisited', async (req, res) => {
     res.status(500).json({ error: 'Error saving user location' });
   }
 });
-
   app.get('/api/certifications/:title', async (req, res) => {
     try {
       const title = req.params.title;
