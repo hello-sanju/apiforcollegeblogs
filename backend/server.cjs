@@ -188,15 +188,14 @@ app.get('/api/uservisited/last', async (req, res) => {
     res.status(500).json({ error: 'Error fetching last user visit' });
   }
 });
-
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
-    const coordinates = Array.isArray(location.coordinates) ? location.coordinates.map(coord => parseFloat(coord)) : [];
+    const coordinates = location.coordinates || []; // Ensure coordinates are present
     const newUserVisited = new UserVisited({
       location: {
         type: 'Point',
-        coordinates: coordinates,
+        coordinates: coordinates.map(coord => parseFloat(coord)), // Parse coordinates to float
       },
       visitedAt: new Date(),
     });
