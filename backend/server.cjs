@@ -208,24 +208,32 @@ function deg2rad(deg) {
 
 // ... (other routes and middleware)
 
-// Use calculateDistance in the /api/uservisited endpoint
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
-    const newUserVisited = new UserVisited({
-      location: {
-        type: 'Point',
-        coordinates: location.coordinates || [],
-      },
-      visitedAt: new Date(),
-    });
-    await newUserVisited.save();
-    res.json({ message: 'User location saved successfully' });
+    const coordinates = location.coordinates || [];
+
+    // Ensure coordinates are present and not empty
+    if (coordinates.length === 2) {
+      const newUserVisited = new UserVisited({
+        location: {
+          type: 'Point',
+          coordinates: coordinates,
+        },
+        visitedAt: new Date(),
+      });
+
+      await newUserVisited.save();
+      res.json({ message: 'User location saved successfully' });
+    } else {
+      res.status(400).json({ error: 'Invalid coordinates' });
+    }
   } catch (error) {
     console.error('Error saving user location:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
   app.post('/api/authenticate', (req, res) => {
   const { password } = req.body;
   // Replace 'yourSecretPassword' with your actual password
