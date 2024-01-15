@@ -217,17 +217,26 @@ app.get('/api/uservisited/last', async (req, res) => {
 });
 
 
+// Update the /api/uservisited endpoint
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
+
+    // Ensure coordinates are present and not empty
+    const coordinates = Array.isArray(location.coordinates) && location.coordinates.length === 2
+      ? location.coordinates.map(coord => parseFloat(coord)) // Convert coordinates to numbers
+      : [];
+
     const newUserVisited = new UserVisited({
       location: {
         type: 'Point',
-        coordinates: location.coordinates || [], // Ensure coordinates are present
+        coordinates: coordinates,
       },
       visitedAt: new Date(),
     });
+
     await newUserVisited.save();
+
     res.json({ message: 'User location saved successfully' });
   } catch (error) {
     console.error('Error saving user location:', error);
