@@ -179,12 +179,14 @@ app.get('/api/userdetails', async (req, res) => {
 app.get('/api/uservisited/last', async (req, res) => {
   try {
     const lastVisited = await UserVisited.findOne({}, {}, { sort: { visitedAt: -1 } });
-    res.json(lastVisited);
+    res.json(lastVisited); // Return JSON response
   } catch (error) {
     console.error('Error fetching last user visit:', error);
     res.status(500).json({ error: 'Error fetching last user visit' });
   }
 });
+
+
 
 // Add the endpoint to save the user's visit
 app.post('/api/uservisited', async (req, res) => {
