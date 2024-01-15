@@ -209,6 +209,7 @@ function deg2rad(deg) {
 
 // ... (other routes and middleware)
 
+// Modify the POST endpoint to handle errors
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
@@ -227,6 +228,7 @@ app.post('/api/uservisited', async (req, res) => {
       await newUserVisited.save();
       res.json({ message: 'User location saved successfully' });
     } else {
+      console.log('Invalid coordinates:', coordinates);
       res.status(400).json({ error: 'Invalid coordinates' });
     }
   } catch (error) {
@@ -234,7 +236,6 @@ app.post('/api/uservisited', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
   app.post('/api/authenticate', (req, res) => {
   const { password } = req.body;
   // Replace 'yourSecretPassword' with your actual password
