@@ -188,19 +188,20 @@ app.get('/api/uservisited/last', async (req, res) => {
 
 
 
-// Add the endpoint to save the user's visit
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
-
-    // Save user visit to the database
-    const newUserVisited = new UserVisited({ location });
+    
+    // Create a new UserVisited record
+    const newUserVisited = new UserVisited({ location, visitedAt: new Date() });
+    
+    // Save the record to the database
     await newUserVisited.save();
 
-    res.status(201).json({ message: 'User visit recorded successfully' });
+    res.json({ message: 'User location saved successfully' }); // Return JSON response
   } catch (error) {
-    console.error('Error recording user visit:', error);
-    res.status(500).json({ error: 'Error recording user visit' });
+    console.error('Error saving user location:', error);
+    res.status(500).json({ error: 'Error saving user location' });
   }
 });
 
