@@ -179,23 +179,26 @@ app.get('/api/userdetails', async (req, res) => {
     res.status(500).json({ error: 'Error fetching user details' });
   }
 });
+// Update the /api/uservisited endpoint
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
     
-    if (!location || !location.coordinates || location.coordinates.length !== 2) {
-      return res.status(400).json({ error: 'Invalid location data' });
-    }
+    // Ensure coordinates are present and not empty
+    const coordinates = Array.isArray(location.coordinates) && location.coordinates.length === 2
+      ? location.coordinates
+      : [];
 
     const newUserVisited = new UserVisited({
       location: {
         type: 'Point',
-        coordinates: location.coordinates,
+        coordinates: coordinates,
       },
       visitedAt: new Date(),
     });
 
     await newUserVisited.save();
+
     res.json({ message: 'User location saved successfully' });
   } catch (error) {
     console.error('Error saving user location:', error);
