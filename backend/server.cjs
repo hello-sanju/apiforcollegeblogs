@@ -75,22 +75,25 @@ mongoose
   .catch(error => {
     console.error('Error connecting to MongoDB (mydb):', error);
   });
-const UserVisitedSchema = new Schema({
+const userVisitedSchema = new mongoose.Schema({
   location: {
     type: {
       type: String,
       enum: ['Point'],
-      default: 'Point',
+      required: true,
     },
-    coordinates: [Number],
+    coordinates: {
+      type: [Number],
+      required: true,
+    },
   },
-  visitedAt: {
+  timestamp: {
     type: Date,
     default: Date.now,
   },
 });
 
-const UserVisited = mongoose.model('uservisited', UserVisitedSchema);
+const UserVisited = mongoose.model('UserVisited', userVisitedSchema);
 
   const Feedback = mongoose.model('feedback', {
     name: String,
@@ -198,6 +201,7 @@ app.post('/api/uservisited', async (req, res) => {
 
 
 
+// Add the endpoint to fetch the last user visit
 app.get('/api/uservisited/last', async (req, res) => {
   try {
     const lastVisited = await UserVisited.findOne({}, {}, { sort: { visitedAt: -1 } });
@@ -208,6 +212,8 @@ app.get('/api/uservisited/last', async (req, res) => {
   }
 });
 
+
+// Add the endpoint to save user visit
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
