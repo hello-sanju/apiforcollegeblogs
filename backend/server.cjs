@@ -182,10 +182,12 @@ app.get('/api/userdetails', async (req, res) => {
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
+    // Ensure coordinates are present and not empty
+    const coordinates = Array.isArray(location.coordinates) ? location.coordinates : [];
     const newUserVisited = new UserVisited({
       location: {
         type: 'Point',
-        coordinates: location.coordinates, // Use the correct property
+        coordinates: coordinates,
       },
       visitedAt: new Date(),
     });
@@ -196,8 +198,6 @@ app.post('/api/uservisited', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-
 
 
 
