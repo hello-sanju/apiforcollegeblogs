@@ -179,11 +179,10 @@ app.get('/api/userdetails', async (req, res) => {
     res.status(500).json({ error: 'Error fetching user details' });
   }
 });
-// Update the /api/uservisited endpoint
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
-    
+
     // Ensure coordinates are present and not empty
     const coordinates = Array.isArray(location.coordinates) && location.coordinates.length === 2
       ? location.coordinates
@@ -194,7 +193,7 @@ app.post('/api/uservisited', async (req, res) => {
         type: 'Point',
         coordinates: coordinates,
       },
-      visitedAt: new Date(),
+      timestamp: new Date(),
     });
 
     await newUserVisited.save();
