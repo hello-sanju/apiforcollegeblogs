@@ -182,15 +182,19 @@ app.get('/api/userdetails', async (req, res) => {
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
-    // Ensure coordinates are present and not empty
-    const coordinates = Array.isArray(location.coordinates) && location.coordinates.length === 2 ? location.coordinates : [];
+    
+    if (!location || !location.coordinates || location.coordinates.length !== 2) {
+      return res.status(400).json({ error: 'Invalid location data' });
+    }
+
     const newUserVisited = new UserVisited({
       location: {
         type: 'Point',
-        coordinates: coordinates,
+        coordinates: location.coordinates,
       },
       visitedAt: new Date(),
     });
+
     await newUserVisited.save();
     res.json({ message: 'User location saved successfully' });
   } catch (error) {
