@@ -179,19 +179,17 @@ app.get('/api/userdetails', async (req, res) => {
     res.status(500).json({ error: 'Error fetching user details' });
   }
 });
-// Server-side route to handle saving user visits
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
-    // Assuming you are using Mongoose for MongoDB
-    const userVisit = new UserVisit({
+    const newUserVisited = new UserVisited({
       location: {
         type: 'Point',
         coordinates: location.coordinates,
       },
       visitedAt: new Date(),
     });
-    await userVisit.save();
+    await newUserVisited.save();
     res.json({ message: 'User location saved successfully' });
   } catch (error) {
     console.error('Error saving user location:', error);
