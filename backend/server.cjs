@@ -9,6 +9,7 @@ const rateLimit = require('express-rate-limit'); // Add rate limiting
 const morgan = require('morgan'); // Add request logging
 const xss = require('xss'); // Add XSS protection
 const session = require('express-session'); // Add session management (if needed)
+const { Schema } = mongoose;
 
 require('dotenv').config();
 
@@ -74,7 +75,7 @@ mongoose
   .catch(error => {
     console.error('Error connecting to MongoDB (mydb):', error);
   });
-const UserVisited = mongoose.model('uservisited', {
+const UserVisitedSchema = new Schema({
   location: {
     type: {
       type: String,
@@ -88,6 +89,8 @@ const UserVisited = mongoose.model('uservisited', {
     default: Date.now,
   },
 });
+
+const UserVisited = mongoose.model('uservisited', UserVisitedSchema);
 
   const Feedback = mongoose.model('feedback', {
     name: String,
@@ -175,13 +178,30 @@ app.get('/api/userdetails', async (req, res) => {
 });
 app.get('/api/uservisited/last', async (req, res) => {
   try {
-    const lastVisited = await UserVisited.findOne({}, {}, { sort: { 'visitedAt': -1 } });
+    const lastVisited = await UserVisited.findOne({}, {}, { sort: { visitedAt: -1 } });
     res.json(lastVisited);
   } catch (error) {
     console.error('Error fetching last user visit:', error);
     res.status(500).json({ error: 'Error fetching last user visit' });
   }
 });
+
+// Add the endpoint to save the user's visit
+app.post('/api/uservisited', async (req, res) => {
+  try {
+    const { location } = req.body;
+
+    // Save user visit to the database
+    const newUserVisited = new UserVisited({ location });
+    await newUserVisited.save();
+
+    res.status(201).json({ message: 'User visit recorded successfully' });
+  } catch (error) {
+    console.error('Error recording user visit:', error);
+    res.status(500).json({ error: 'Error recording user visit' });
+  }
+});
+
 
   app.get('/api/certifications/:title', async (req, res) => {
     try {
