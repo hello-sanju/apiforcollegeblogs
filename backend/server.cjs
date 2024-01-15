@@ -211,21 +211,21 @@ app.get('/api/uservisited/last', async (req, res) => {
 });
 
 
-// Add the endpoint to save user visit
 app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
-    
-    // Create a new UserVisited record
-    const newUserVisited = new UserVisited({ location, visitedAt: new Date() });
-    
-    // Save the record to the database
+    const newUserVisited = new UserVisited({
+      location: {
+        type: 'Point',
+        coordinates: location.coordinates || [], // Ensure coordinates are present
+      },
+      visitedAt: new Date(),
+    });
     await newUserVisited.save();
-
-    res.json({ message: 'User location saved successfully' }); // Return JSON response
+    res.json({ message: 'User location saved successfully' });
   } catch (error) {
     console.error('Error saving user location:', error);
-    res.status(500).json({ error: 'Error saving user location' });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
   app.post('/api/authenticate', (req, res) => {
