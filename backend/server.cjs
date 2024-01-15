@@ -193,11 +193,6 @@ app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
     const coordinates = Array.isArray(location.coordinates) ? location.coordinates.map(coord => parseFloat(coord)) : [];
-    
-    if (coordinates.length !== 2) {
-      throw new Error('Invalid coordinates');
-    }
-
     const newUserVisited = new UserVisited({
       location: {
         type: 'Point',
@@ -205,7 +200,6 @@ app.post('/api/uservisited', async (req, res) => {
       },
       visitedAt: new Date(),
     });
-
     await newUserVisited.save();
     res.json({ message: 'User location saved successfully' });
   } catch (error) {
@@ -213,7 +207,6 @@ app.post('/api/uservisited', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
   app.post('/api/authenticate', (req, res) => {
   const { password } = req.body;
   // Replace 'yourSecretPassword' with your actual password
