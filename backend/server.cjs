@@ -183,7 +183,7 @@ app.post('/api/uservisited', async (req, res) => {
   try {
     const { location } = req.body;
     // Ensure coordinates are present and not empty
-    const coordinates = Array.isArray(location.coordinates) ? location.coordinates : [];
+    const coordinates = Array.isArray(location.coordinates) && location.coordinates.length === 2 ? location.coordinates : [];
     const newUserVisited = new UserVisited({
       location: {
         type: 'Point',
@@ -198,8 +198,6 @@ app.post('/api/uservisited', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-
 
 // Add the endpoint to fetch the last user visit
 app.get('/api/uservisited/last', async (req, res) => {
