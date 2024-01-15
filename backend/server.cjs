@@ -74,6 +74,20 @@ mongoose
   .catch(error => {
     console.error('Error connecting to MongoDB (mydb):', error);
   });
+const UserVisited = mongoose.model('uservisited', {
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point',
+    },
+    coordinates: [Number],
+  },
+  visitedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
   const Feedback = mongoose.model('feedback', {
     name: String,
@@ -157,6 +171,15 @@ app.get('/api/userdetails', async (req, res) => {
   } catch (error) {
     console.error('Error fetching user details:', error);
     res.status(500).json({ error: 'Error fetching user details' });
+  }
+});
+app.get('/api/uservisited/last', async (req, res) => {
+  try {
+    const lastVisited = await UserVisited.findOne({}, {}, { sort: { 'visitedAt': -1 } });
+    res.json(lastVisited);
+  } catch (error) {
+    console.error('Error fetching last user visit:', error);
+    res.status(500).json({ error: 'Error fetching last user visit' });
   }
 });
 
