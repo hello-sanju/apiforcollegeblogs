@@ -75,26 +75,24 @@ mongoose
   .catch(error => {
     console.error('Error connecting to MongoDB (mydb):', error);
   });
-const userVisitedSchema = new mongoose.Schema({
+
+const UserVisited = mongoose.model('uservisited', {
   location: {
     type: {
       type: String,
       enum: ['Point'],
-      required: true,
+      default: 'Point',
     },
-    coordinates: {
-      type: [Number],
-      required: true,
-    },
+    coordinates: [Number],
   },
   visitedAt: {
     type: Date,
     default: Date.now,
   },
 });
-const UserVisited = mongoose.model('UserVisited', userVisitedSchema);
 
-  const Feedback = mongoose.model('feedback', {
+
+const Feedback = mongoose.model('feedback', {
     name: String,
     email: String,
     feedback: String,
@@ -178,65 +176,26 @@ app.get('/api/userdetails', async (req, res) => {
     res.status(500).json({ error: 'Error fetching user details' });
   }
 });
-// Modify the endpoint to fetch the last user visit
-app.get('/api/uservisited/last', async (req, res) => {
+app.post('/api/store-visited-location', async (req, res) => {
   try {
-    const lastVisited = await UserVisited.findOne({}, { location: 1, visitedAt: 1 }, { sort: { visitedAt: -1 } });
-    res.json(lastVisited || null); // Return JSON response or null if no visit recorded
+    const { latitude, longitude } = req.body;
+
+    // Save user's visited location to the database
+    const newUserVisited = new UserVisited({
+      location: {
+        type: 'Point',
+        coordinates: [parseFloat(longitude), parseFloat(latitude)],
+      },
+    });
+
+    await newUserVisited.save();
+    res.status(201).json({ message: 'Location stored successfully' });
   } catch (error) {
-    console.error('Error fetching last user visit:', error);
-    res.status(500).json({ error: 'Error fetching last user visit' });
+    console.error('Error storing location:', error);
+    res.status(500).json({ error: 'Error storing location' });
   }
 });
 
-// Add the endpoint to save user location
-app.post('/api/uservisited', async (req, res) => {
-  try {
-    const { location } = req.body;
-    const coordinates = location.coordinates || [];
-
-    // Ensure coordinates are present and not empty
-    if (coordinates.length === 2) {
-      const newUserVisited = new UserVisited({
-        location: {
-          type: 'Point',
-          coordinates: coordinates,
-        },
-        visitedAt: new Date(),
-      });
-
-      await newUserVisited.save();
-      res.json({ message: 'User location saved successfully' });
-    } else {
-      res.status(400).json({ error: 'Invalid coordinates' });
-    }
-  } catch (error) {
-    console.error('Error saving user location:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
-
-
-// Add the calculateDistance function
-function calculateDistance(coord1, coord2) {
-  const [lat1, lon1] = coord1;
-  const [lat2, lon2] = coord2;
-  const R = 6371; // Radius of the earth in km
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c; // Distance in km
-  return distance;
-}
-
-function deg2rad(deg) {
-  return deg * (Math.PI / 180);
-}
-
-// ... (other routes and middleware)
 
   app.post('/api/authenticate', (req, res) => {
   const { password } = req.body;
