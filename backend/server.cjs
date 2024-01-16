@@ -76,6 +76,7 @@ mongoose
     console.error('Error connecting to MongoDB (mydb):', error);
   });
 
+
 const UserVisited = mongoose.model('uservisited', {
   userId: {
     type: String,
@@ -129,7 +130,11 @@ const UserDetail = mongoose.model('userdetails', {
   },
   lastSignInAt: Date,
 });
-
+let resumeClickCount = 0; // Initialize the click count
+app.post('/api/increment-resume-clicks', (req, res) => {
+  resumeClickCount++;
+  res.status(200).json({ message: 'Resume click count updated successfully', count: resumeClickCount });
+});
 // Add a new endpoint to fetch all user profiles
 app.get('/api/userprofiles', async (req, res) => {
   try {
