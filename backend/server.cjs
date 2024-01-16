@@ -237,7 +237,15 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c;
   return distance;
 }
-
+app.get('/api/uservisited', async (req, res) => {
+  try {
+    const userVisitedLocations = await UserVisited.find();
+    res.json(userVisitedLocations);
+  } catch (error) {
+    console.error('Error fetching user visited locations:', error);
+    res.status(500).json({ error: 'Error fetching user visited locations' });
+  }
+});
   app.post('/api/authenticate', (req, res) => {
   const { password } = req.body;
   // Replace 'yourSecretPassword' with your actual password
