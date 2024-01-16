@@ -77,6 +77,11 @@ mongoose
   });
 
 const UserVisited = mongoose.model('uservisited', {
+  userId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   location: {
     type: {
       type: String,
@@ -180,8 +185,30 @@ app.post('/api/store-visited-location', async (req, res) => {
   try {
     const { latitude, longitude } = req.body;
 
+    // Unique user identifier (you can use the user's IP address or some other identifier)
+    const userId = req.ip; // Example: Using IP address as userId
+
+    // Find the last stored location for the user
+    const lastVisitedLocation = await UserVisited.findOne({ userId }).sort({ visitedAt: -1 });
+
+    // If there is a last location, calculate the distance
+    if (lastVisitedLocation) {
+      const distance = calculateDistance(
+        lastVisitedLocation.location.coordinates[1],
+        lastVisitedLocation.location.coordinates[0],
+        parseFloat(latitude),
+        parseFloat(longitude)
+      );
+
+      // If the distance is less than 1 km, skip storing the new location
+      if (distance < 1) {
+        return res.status(200).json({ message: 'Location not stored (user did not move more than 1 km)' });
+      }
+    }
+
     // Save user's visited location to the database
     const newUserVisited = new UserVisited({
+      userId,
       location: {
         type: 'Point',
         coordinates: [parseFloat(longitude), parseFloat(latitude)],
@@ -196,6 +223,20 @@ app.post('/api/store-visited-location', async (req, res) => {
   }
 });
 
+// ... (other routes)
+
+// Helper function to calculate distance between two sets of coordinates using Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+  return distance;
+}
 
   app.post('/api/authenticate', (req, res) => {
   const { password } = req.body;
