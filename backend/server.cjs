@@ -135,6 +135,10 @@ app.post('/api/increment-resume-clicks', (req, res) => {
   resumeClickCount++;
   res.status(200).json({ message: 'Resume click count updated successfully', count: resumeClickCount });
 });
+app.get('/api/get-resume-click-count', (req, res) => {
+  res.status(200).json({ count: resumeClickCount });
+});
+
 // Add a new endpoint to fetch all user profiles
 app.get('/api/userprofiles', async (req, res) => {
   try {
