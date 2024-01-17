@@ -227,10 +227,10 @@ app.post('/api/store-visited-location', async (req, res) => {
     // If there is a last location, calculate the distance
     if (lastVisitedLocation) {
       const distance = calculateDistance(
-        lastVisitedLocation.location.coordinates[1],
-        lastVisitedLocation.location.coordinates[0],
         parseFloat(latitude),
-        parseFloat(longitude)
+        parseFloat(longitude),
+        lastVisitedLocation.location.coordinates[1],
+        lastVisitedLocation.location.coordinates[0]
       );
 
       // If the distance is less than 1 km, skip storing the new location
@@ -257,6 +257,7 @@ app.post('/api/store-visited-location', async (req, res) => {
     res.status(500).json({ error: 'Error storing location' });
   }
 });
+
 
 // Helper function to calculate distance between two sets of coordinates using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
