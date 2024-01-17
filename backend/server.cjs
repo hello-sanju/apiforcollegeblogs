@@ -78,10 +78,9 @@ mongoose
 
 
 const UserVisited = mongoose.model('uservisited', {
-  userId: {
+  ip: {
     type: String,
     required: true,
-    unique: true,
   },
   location: {
     type: {
@@ -96,6 +95,7 @@ const UserVisited = mongoose.model('uservisited', {
     default: Date.now,
   },
 });
+
 const Feedback = mongoose.model('feedback', {
     name: String,
     email: String,
@@ -198,14 +198,11 @@ app.post('/api/store-visited-location', async (req, res) => {
   try {
     const { latitude, longitude } = req.body;
 
-    // Get the exact user IP address
-    const userIp = req.connection.remoteAddress || '';
-
-    // Generate a unique user identifier based on IP
-    const userId = userIp;
+    // Extract user's IP address from request
+    const ip = getClientIp(req);
 
     // Find the last stored location for the user
-    const lastVisitedLocation = await UserVisited.findOne({ userId }).sort({ visitedAt: -1 });
+    const lastVisitedLocation = await UserVisited.findOne({ ip }).sort({ visitedAt: -1 });
 
     // If there is a last location, calculate the distance
     if (lastVisitedLocation) {
@@ -224,7 +221,7 @@ app.post('/api/store-visited-location', async (req, res) => {
 
     // Save user's visited location to the database
     const newUserVisited = new UserVisited({
-      userId,
+      ip,
       location: {
         type: 'Point',
         coordinates: [parseFloat(longitude), parseFloat(latitude)],
@@ -239,7 +236,11 @@ app.post('/api/store-visited-location', async (req, res) => {
   }
 });
 
-// ... (other routes)
+
+// Helper function to extract client's IP address from request
+function getClientIp(req) {
+  return req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || null;
+}
 
 // Helper function to calculate distance between two sets of coordinates using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -253,7 +254,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c;
   return distance;
 }
-
 
 
 
