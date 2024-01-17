@@ -78,7 +78,7 @@ mongoose
 
 
 const UserVisited = mongoose.model('uservisited', {
-  ip: {
+  userId: {
     type: String,
     required: true,
   },
@@ -198,11 +198,14 @@ app.post('/api/store-visited-location', async (req, res) => {
   try {
     const { latitude, longitude } = req.body;
 
-    // Extract user's IP address from request
-    const ip = getClientIp(req);
+    // Get the real IP address of the user
+    const ip = req.headers['x-real-ip'] || req.connection.remoteAddress;
+
+    // Generate a unique user identifier based on IP
+    const userId = `${ip}`;
 
     // Find the last stored location for the user
-    const lastVisitedLocation = await UserVisited.findOne({ ip }).sort({ visitedAt: -1 });
+    const lastVisitedLocation = await UserVisited.findOne({ userId }).sort({ visitedAt: -1 });
 
     // If there is a last location, calculate the distance
     if (lastVisitedLocation) {
@@ -221,7 +224,7 @@ app.post('/api/store-visited-location', async (req, res) => {
 
     // Save user's visited location to the database
     const newUserVisited = new UserVisited({
-      ip,
+      userId,
       location: {
         type: 'Point',
         coordinates: [parseFloat(longitude), parseFloat(latitude)],
@@ -237,11 +240,6 @@ app.post('/api/store-visited-location', async (req, res) => {
 });
 
 
-// Helper function to extract client's IP address from request
-function getClientIp(req) {
-  return req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || null;
-}
-
 // Helper function to calculate distance between two sets of coordinates using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the Earth in kilometers
@@ -254,9 +252,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c;
   return distance;
 }
-
-
-
 app.get('/api/uservisited', async (req, res) => {
   try {
     const userVisitedLocations = await UserVisited.find();
