@@ -12,6 +12,7 @@ const session = require('express-session'); // Add session management (if needed
 const { Schema } = mongoose;
 const requestIp = require('request-ip');
 const Fingerprint2 = require('fingerprintjs2');
+const useragent = require('express-useragent');
 
 require('dotenv').config();
 
@@ -35,6 +36,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(requestIp.mw());
+app.use(useragent.express());
 
 // Implement rate limiting (100 requests per hour)
 const limiter = rateLimit({
@@ -80,7 +82,7 @@ mongoose
   });
 
 
-const UserVisited = mongoose.model('uservisited', {
+const userVisitedSchema = new mongoose.Schema({
   userId: {
     type: String,
     required: true,
@@ -102,11 +104,35 @@ const UserVisited = mongoose.model('uservisited', {
     },
     coordinates: [Number],
   },
+  userAgentDetails: {
+    browser: {
+      type: String,
+      required: true,
+    },
+    version: {
+      type: String,
+      required: true,
+    },
+    os: {
+      type: String,
+      required: true,
+    },
+    platform: {
+      type: String,
+      required: true,
+    },
+    source: {
+      type: String,
+      required: true,
+    },
+  },
   visitedAt: {
     type: Date,
     default: Date.now,
   },
 });
+
+
 
 
 
@@ -218,11 +244,29 @@ app.post('/api/store-visited-location', async (req, res) => {
     // Generate a browser fingerprint
     const fingerprint = await generateFingerprint(req);
 
-    // Generate a unique user identifier based on IP and browser fingerprint
-    const userId = `${clientIp}_${fingerprint}`;
+    // Extract additional device details from user agent
+    const userAgentDetails = {
+      browser: req.useragent.browser,
+      version: req.useragent.version,
+      os: req.useragent.os,
+      platform: req.useragent.platform,
+      source: req.headers['user-agent'],
+    };
+
+    // Combine fingerprint, IP, and device details
+    const userDetails = {
+      userId: `${clientIp}_${fingerprint}`,
+      ip: clientIp,
+      fingerprint,
+      location: {
+        type: 'Point',
+        coordinates: [parseFloat(longitude), parseFloat(latitude)],
+      },
+      userAgentDetails,
+    };
 
     // Find the last stored location for the user
-    const lastVisitedLocation = await UserVisited.findOne({ userId }).sort({ visitedAt: -1 });
+    const lastVisitedLocation = await UserVisited.findOne({ userId: userDetails.userId }).sort({ visitedAt: -1 });
 
     // If there is a last location, calculate the distance
     if (lastVisitedLocation) {
@@ -240,25 +284,15 @@ app.post('/api/store-visited-location', async (req, res) => {
     }
 
     // Save user's visited location to the database
-    const newUserVisited = new UserVisited({
-      userId,
-      ip: clientIp,
-      fingerprint,
-      location: {
-        type: 'Point',
-        coordinates: [parseFloat(longitude), parseFloat(latitude)],
-      },
-    });
-
+    const newUserVisited = new UserVisited(userDetails);
     await newUserVisited.save();
-    res.status(201).json({ message: 'Location stored successfully' });
+
+    res.status(201).json({ message: 'Location stored successfully', userDetails });
   } catch (error) {
     console.error('Error storing location:', error);
     res.status(500).json({ error: 'Error storing location' });
   }
 });
-
-// ... (other routes)
 
 // Helper function to calculate distance between two sets of coordinates using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -272,17 +306,23 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c;
   return distance;
 }
-
 // Helper function to generate a browser fingerprint using fingerprintjs2
 function generateFingerprint(req) {
   return new Promise((resolve, reject) => {
-    Fingerprint2.get((components) => {
+    Fingerprint2.get({
+      preprocessor: (key, value) => {
+        // Exclude some information from fingerprinting
+        if (key === 'userAgent') return undefined;
+        return value;
+      },
+    }, (components) => {
       const values = components.map((component) => component.value);
       const fingerprint = Fingerprint2.x64hash128(values.join(''), 31);
       resolve(fingerprint);
     });
   });
 }
+
 
 
 app.get('/api/uservisited', async (req, res) => {
