@@ -11,6 +11,7 @@ const xss = require('xss'); // Add XSS protection
 const session = require('express-session'); // Add session management (if needed)
 const { Schema } = mongoose;
 const requestIp = require('request-ip');
+const Fingerprint = require('fingerprintjs2');
 
 require('dotenv').config();
 
@@ -85,6 +86,14 @@ const UserVisited = mongoose.model('uservisited', {
     required: true,
     unique: true,
   },
+  ip: {
+    type: String,
+    required: true,
+  },
+  fingerprint: {
+    type: String,
+    required: true,
+  },
   location: {
     type: {
       type: String,
@@ -98,6 +107,7 @@ const UserVisited = mongoose.model('uservisited', {
     default: Date.now,
   },
 });
+
 
 
 const Feedback = mongoose.model('feedback', {
@@ -205,8 +215,11 @@ app.post('/api/store-visited-location', async (req, res) => {
       return res.status(500).json({ error: 'Failed to extract IP address' });
     }
 
-    // Generate a unique user identifier based on IP
-    const userId = clientIp;
+    // Generate a browser fingerprint
+    const fingerprint = await generateFingerprint(req);
+
+    // Generate a unique user identifier based on IP and browser fingerprint
+    const userId = `${clientIp}_${fingerprint}`;
 
     // Find the last stored location for the user
     const lastVisitedLocation = await UserVisited.findOne({ userId }).sort({ visitedAt: -1 });
@@ -229,6 +242,8 @@ app.post('/api/store-visited-location', async (req, res) => {
     // Save user's visited location to the database
     const newUserVisited = new UserVisited({
       userId,
+      ip: clientIp,
+      fingerprint,
       location: {
         type: 'Point',
         coordinates: [parseFloat(longitude), parseFloat(latitude)],
@@ -243,7 +258,6 @@ app.post('/api/store-visited-location', async (req, res) => {
   }
 });
 
-
 // Helper function to calculate distance between two sets of coordinates using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the Earth in kilometers
@@ -256,6 +270,20 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c;
   return distance;
 }
+
+// Helper function to generate a browser fingerprint using FingerprintJS
+async function generateFingerprint(req) {
+  return new Promise((resolve, reject) => {
+    new Fingerprint().get((result, error) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
 
 
 app.get('/api/uservisited', async (req, res) => {
