@@ -285,16 +285,16 @@ async function generateFingerprint(req) {
 }
 
 
-
 app.get('/api/uservisited', async (req, res) => {
   try {
-    const userVisitedLocations = await UserVisited.find();
+    const userVisitedLocations = await UserVisited.find({}, { _id: 0, __v: 0 }); // Exclude _id and __v from the response
     res.json(userVisitedLocations);
   } catch (error) {
     console.error('Error fetching user visited locations:', error);
     res.status(500).json({ error: 'Error fetching user visited locations' });
   }
 });
+
   app.post('/api/authenticate', (req, res) => {
   const { password } = req.body;
   // Replace 'yourSecretPassword' with your actual password
