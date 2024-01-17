@@ -218,6 +218,10 @@ app.post('/api/store-visited-location', async (req, res) => {
     // Generate a browser fingerprint
     const fingerprint = await generateFingerprint(req);
 
+    if (!fingerprint) {
+      return res.status(500).json({ error: 'Failed to generate fingerprint' });
+    }
+
     // Generate a unique user identifier based on IP and browser fingerprint
     const userId = `${clientIp}_${fingerprint}`;
 
@@ -258,6 +262,7 @@ app.post('/api/store-visited-location', async (req, res) => {
   }
 });
 
+// Helper function to calculate distance between two sets of coordinates using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the Earth in kilometers
   const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -269,8 +274,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c;
   return distance;
 }
-
-
 // Helper function to generate a browser fingerprint using FingerprintJS
 async function generateFingerprint(req) {
   return new Promise((resolve, reject) => {
