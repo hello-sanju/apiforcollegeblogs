@@ -10,6 +10,7 @@ const morgan = require('morgan'); // Add request logging
 const xss = require('xss'); // Add XSS protection
 const session = require('express-session'); // Add session management (if needed)
 const { Schema } = mongoose;
+const requestIp = require('request-ip');
 
 require('dotenv').config();
 
@@ -32,6 +33,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(requestIp.mw());
 
 // Implement rate limiting (100 requests per hour)
 const limiter = rateLimit({
@@ -81,6 +83,7 @@ const UserVisited = mongoose.model('uservisited', {
   userId: {
     type: String,
     required: true,
+    unique: true,
   },
   location: {
     type: {
@@ -95,6 +98,7 @@ const UserVisited = mongoose.model('uservisited', {
     default: Date.now,
   },
 });
+
 
 const Feedback = mongoose.model('feedback', {
     name: String,
@@ -190,19 +194,19 @@ app.get('/api/userdetails', async (req, res) => {
 });
 
 
-
-
-
-
 app.post('/api/store-visited-location', async (req, res) => {
   try {
     const { latitude, longitude } = req.body;
 
-    // Get the real IP address of the user
-    const ip = req.headers['x-real-ip'] || req.connection.remoteAddress;
+    // Extract the client's IP address
+    const clientIp = req.clientIp;
+
+    if (!clientIp) {
+      return res.status(500).json({ error: 'Failed to extract IP address' });
+    }
 
     // Generate a unique user identifier based on IP
-    const userId = `${ip}`;
+    const userId = clientIp;
 
     // Find the last stored location for the user
     const lastVisitedLocation = await UserVisited.findOne({ userId }).sort({ visitedAt: -1 });
@@ -252,6 +256,8 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c;
   return distance;
 }
+
+
 app.get('/api/uservisited', async (req, res) => {
   try {
     const userVisitedLocations = await UserVisited.find();
