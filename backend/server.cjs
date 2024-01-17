@@ -82,7 +82,7 @@ mongoose
   });
 
 
-const userVisitedSchema = new mongoose.Schema({
+const UserVisited = mongoose.model('uservisited', {
   userId: {
     type: String,
     required: true,
