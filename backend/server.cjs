@@ -11,7 +11,7 @@ const xss = require('xss'); // Add XSS protection
 const session = require('express-session'); // Add session management (if needed)
 const { Schema } = mongoose;
 const requestIp = require('request-ip');
-const Fingerprint = require('fingerprintjs2');
+const Fingerprint2 = require('fingerprintjs2');
 
 require('dotenv').config();
 
@@ -258,6 +258,7 @@ app.post('/api/store-visited-location', async (req, res) => {
   }
 });
 
+// ... (other routes)
 
 // Helper function to calculate distance between two sets of coordinates using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -272,18 +273,18 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return distance;
 }
 
-// Helper function to generate a browser fingerprint using FingerprintJS
+// Helper function to generate a browser fingerprint using fingerprintjs2
 function generateFingerprint(req) {
   return new Promise((resolve, reject) => {
-    new Fingerprint().get((result, error) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(result);
-      }
+    Fingerprint2.get((components) => {
+      const values = components.map((component) => component.value);
+      const fingerprint = Fingerprint2.x64hash128(values.join(''), 31);
+      resolve(fingerprint);
     });
   });
 }
+
+
 app.get('/api/uservisited', async (req, res) => {
   try {
     const userVisitedLocations = await UserVisited.find({}, { _id: 0, __v: 0 }); // Exclude _id and __v from the response
