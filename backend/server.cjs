@@ -81,6 +81,7 @@ const UserVisited = mongoose.model('uservisited', {
   userId: {
     type: String,
     required: true,
+    unique: true,
   },
   location: {
     type: {
@@ -95,7 +96,6 @@ const UserVisited = mongoose.model('uservisited', {
     default: Date.now,
   },
 });
-
 const Feedback = mongoose.model('feedback', {
     name: String,
     email: String,
@@ -198,8 +198,11 @@ app.post('/api/store-visited-location', async (req, res) => {
   try {
     const { latitude, longitude } = req.body;
 
-    // Generate a unique user identifier based on IP and User-Agent
-    const userId = generateUserId(req);
+    // Get the exact user IP address
+    const userIp = req.connection.remoteAddress || '';
+
+    // Generate a unique user identifier based on IP
+    const userId = userIp;
 
     // Find the last stored location for the user
     const lastVisitedLocation = await UserVisited.findOne({ userId }).sort({ visitedAt: -1 });
@@ -236,12 +239,7 @@ app.post('/api/store-visited-location', async (req, res) => {
   }
 });
 
-// Helper function to generate a unique user identifier based on IP and User-Agent
-function generateUserId(req) {
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || null;
-  const userAgent = req.headers['user-agent'] || null;
-  return `${ip}_${userAgent}`;
-}
+// ... (other routes)
 
 // Helper function to calculate distance between two sets of coordinates using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -255,7 +253,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c;
   return distance;
 }
-
 
 
 
