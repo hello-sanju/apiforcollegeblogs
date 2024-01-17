@@ -218,10 +218,6 @@ app.post('/api/store-visited-location', async (req, res) => {
     // Generate a browser fingerprint
     const fingerprint = await generateFingerprint(req);
 
-    if (!fingerprint) {
-      return res.status(500).json({ error: 'Failed to generate fingerprint' });
-    }
-
     // Generate a unique user identifier based on IP and browser fingerprint
     const userId = `${clientIp}_${fingerprint}`;
 
@@ -274,8 +270,9 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c;
   return distance;
 }
+
 // Helper function to generate a browser fingerprint using FingerprintJS
-async function generateFingerprint(req) {
+function generateFingerprint(req) {
   return new Promise((resolve, reject) => {
     new Fingerprint().get((result, error) => {
       if (error) {
@@ -286,7 +283,6 @@ async function generateFingerprint(req) {
     });
   });
 }
-
 app.get('/api/uservisited', async (req, res) => {
   try {
     const userVisitedLocations = await UserVisited.find({}, { _id: 0, __v: 0 }); // Exclude _id and __v from the response
