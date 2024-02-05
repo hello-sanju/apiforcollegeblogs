@@ -81,7 +81,12 @@ mongoose
     console.error('Error connecting to MongoDB (mydb):', error);
   });
 
-
+const ResumeDownloadCount = mongoose.model('resumeDownloadCount', {
+  count: {
+    type: Number,
+    default: 0,
+  },
+});
 const UserVisited = mongoose.model('uservisited', {
   userId: {
     type: String,
@@ -168,13 +173,39 @@ const UserDetail = mongoose.model('userdetails', {
   },
   lastSignInAt: Date,
 });
-let resumeClickCount = 0; // Initialize the click count
-app.post('/api/increment-resume-clicks', (req, res) => {
-  resumeClickCount++;
-  res.status(200).json({ message: 'Resume click count updated successfully', count: resumeClickCount });
+// Endpoint to get the current resume download count
+app.get('/api/get-resume-click-count', async (req, res) => {
+  try {
+    // Fetch the download count from the database
+    const countDoc = await ResumeDownloadCount.findOne({});
+    const count = countDoc ? countDoc.count : 0;
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error('Error fetching resume download count:', error);
+    res.status(500).json({ error: 'Error fetching resume download count' });
+  }
 });
-app.get('/api/get-resume-click-count', (req, res) => {
-  res.status(200).json({ count: resumeClickCount });
+
+// Endpoint to increment the resume download count
+app.post('/api/increment-resume-clicks', async (req, res) => {
+  try {
+    // Find the existing count document in the database
+    let countDoc = await ResumeDownloadCount.findOne({});
+
+    // If the document does not exist, create a new one
+    if (!countDoc) {
+      countDoc = new ResumeDownloadCount();
+    }
+
+    // Increment the count and save the document
+    countDoc.count += 1;
+    await countDoc.save();
+
+    res.status(200).json({ message: 'Resume click count updated successfully', count: countDoc.count });
+  } catch (error) {
+    console.error('Error incrementing resume click count:', error);
+    res.status(500).json({ error: 'Error incrementing resume click count' });
+  }
 });
 
 // Add a new endpoint to fetch all user profiles
