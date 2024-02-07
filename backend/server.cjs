@@ -20,6 +20,7 @@ const app = express();
 const allowedOrigins = [
   'https://sanjay-patidar.vercel.app',
   'http://localhost:5173',
+  'https://edu-back-j3mz.onrender.com/api/random-blog-titles',
   // Add more domains if needed
 ];
 
