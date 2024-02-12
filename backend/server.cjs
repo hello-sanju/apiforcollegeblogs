@@ -261,7 +261,7 @@ app.get('/api/certifications/:title', async (req, res) => {
     const adminInfo = {
       admin: 'Sanjay Patidar',
       contactNumber: '9131743250',
-      address: 'Indore, India (458220)',
+      address: 'New Palasia, (Indore), India (452001)',
     };
     res.status(201).json({ message: 'Contact submitted successfully', adminInfo });
   } catch (error) {
@@ -388,7 +388,7 @@ app.get('/api/uservisited', async (req, res) => {
   app.post('/api/authenticate', (req, res) => {
   const { password } = req.body;
   // Replace 'yourSecretPassword' with your actual password
-  if (password === 'Sanjay@940660') {
+  if (password === 'Baba@940660') {
     res.json({ authenticated: true });
   } else {
     res.json({ authenticated: false });
