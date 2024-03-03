@@ -133,6 +133,10 @@ const UserVisited = mongoose.model('uservisited', {
       type: String,
       required: true,
     },
+     device: {
+      type: String,
+      required: true,
+    },
   },
   visitedAt: {
     type: Date,
@@ -301,6 +305,8 @@ app.post('/api/store-visited-location', async (req, res) => {
       os: req.useragent.os,
       platform: req.useragent.platform,
       source: req.headers['user-agent'],
+            device: req.useragent.source 
+
     };
 
     // Combine fingerprint, IP, and device details
