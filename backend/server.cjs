@@ -197,7 +197,7 @@ const UserDetail = mongoose.model('userdetails', {
   });
 
 
-  const Careers = mongoose.model('careers', {
+  const Career = mongoose.model('careers', {
     title: String,
     overview: [String],
     description: [String],
