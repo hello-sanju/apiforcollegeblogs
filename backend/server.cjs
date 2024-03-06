@@ -215,6 +215,38 @@ const UserDetail = mongoose.model('userdetails', {
   });
 
 
+const FrontendDevelopmentCareerSchema = new mongoose.Schema({
+  title: String,
+  overview: [String],
+  description: [String],
+  keypoints: [String],
+  imageURL: [String],
+  videoURL: [String],
+});
+
+// Define schema for CSS courses
+const BackendDevelopmentCareerSchema = new mongoose.Schema({
+  title: String,
+  overview: [String],
+  description: [String],
+  keypoints: [String],
+  imageURL: [String],
+  videoURL: [String],
+});
+
+const FrontendDevelopmentCareers = mongoose.model('frontend_development_careers', FrontendDevelopmentCareerSchema);
+
+const BackendDevelopmentCareers = mongoose.model('backend_development_careers', BackendDevelopmentCareerSchema);
+
+// Export the models
+module.exports = {
+  FrontendDevelopmentCareers,
+  BackendDevelopmentCareers,
+  
+};
+
+
+
 // Endpoint to get the current resume download count
 app.get('/api/get-resume-click-count', async (req, res) => {
   try {
@@ -253,6 +285,57 @@ app.get('/api/certifications/:title', async (req, res) => {
     }
   });
   
+  //new api for talks
+  app.get('/api/:vision', async (req, res) => {
+    const { vision } = req.params;
+    try {
+      let talkContent;
+      // Fetch course content based on the provided vision
+      switch (vision) {
+        case 'frontend_development_careers':
+          talkContent = await FrontendDevelopmentCareers.find().lean();
+          break;
+        case 'backend_development_careers':
+          talkContent = await BackendDevelopmentCareers.find().lean();
+          break;
+               default:
+          // Check if the vision matches any library in the database
+          const library = await mydb.library(vision).find().lean();
+          if (library.length > 0) {
+            talkContent = library;
+          } else {
+            return res.status(404).json({ error: 'Vision not found' });
+          }
+      }
+  
+      if (talkContent.length > 0) {
+        return res.json(talkContent);
+      } else {
+        return res.status(404).json({ error: 'Talk not found' });
+      }
+    } catch (error) {
+      console.error('Error fetching course content:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+  app.get('/api/careers/vision/:vision', async (req, res) => {
+    try {
+      const vision = req.params.vision;
+      if (vision === 'all') {
+        const career = await Career.find();
+        res.json(career);
+      } else {
+        const career = await Career.find({ vision });
+        res.json(career);
+      }
+    } catch (error) {
+      console.error('Error fetching career:', error);
+      res.status(500).json({ error: 'Error fetching career' });
+    }
+  });
+  
+  
+
 
 
  app.get('/api/:collection', async (req, res) => {
