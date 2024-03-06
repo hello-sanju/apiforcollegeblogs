@@ -13,6 +13,7 @@ const { Schema } = mongoose;
 const requestIp = require('request-ip');
 const Fingerprint2 = require('fingerprintjs2');
 const useragent = require('express-useragent');
+const mydb = mongoose.connection;
 
 require('dotenv').config();
 
