@@ -19,6 +19,8 @@ require('dotenv').config();
 const app = express();
 const allowedOrigins = [
   'https://sanjay-patidar.vercel.app',
+    'https://eduxcel.vercel.app',
+
   'http://localhost:5173',
   'https://edu-back-j3mz.onrender.com/api/random-blog-titles',
     'https://edu-back-j3mz.onrender.com',
@@ -61,13 +63,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Implement session management (if needed)
-// app.use(session({
-//   secret: 'your-secret-key',
-//   resave: false,
-//   saveUninitialized: true,
-//   cookie: { secure: true } // Enable secure cookies if using HTTPS
-// }));
 
 const port = process.env.PORT || 5000;
 const mongoURIMyDB = process.env.MONGODB_URI_MYDB;
@@ -232,6 +227,34 @@ app.get('/api/get-resume-click-count', async (req, res) => {
     res.status(500).json({ error: 'Error fetching resume download count' });
   }
 });
+
+app.get('/api/certifications', async (req, res) => {
+    try {
+      const certifications = await Certification.find();
+      res.json(certifications);
+    } catch (error) {
+      console.error('Error fetching certifications:', error);
+      res.status(500).json({ error: 'Error fetching certifications' });
+    }
+  });
+app.get('/api/certifications/:title', async (req, res) => {
+    try {
+      const title = req.params.title;
+      // Query your MongoDB collection to find the certification by title
+      const certification = await Certification.findOne({ title });
+      if (!certification) {
+        return res.status(404).json({ error: 'Certification not found' });
+      }
+      // Return the certification details as JSON
+      res.json(certification);
+    } catch (error) {
+      console.error('Error fetching certification details:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
+
+
  app.get('/api/:collection', async (req, res) => {
     const collection = req.params.collection;
     try {
@@ -336,30 +359,6 @@ app.get('/api/userprofiles', async (req, res) => {
 
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
   
-  app.get('/api/certifications', async (req, res) => {
-    try {
-      const certifications = await Certification.find();
-      res.json(certifications);
-    } catch (error) {
-      console.error('Error fetching certifications:', error);
-      res.status(500).json({ error: 'Error fetching certifications' });
-    }
-  });
-app.get('/api/certifications/:title', async (req, res) => {
-    try {
-      const title = req.params.title;
-      // Query your MongoDB collection to find the certification by title
-      const certification = await Certification.findOne({ title });
-      if (!certification) {
-        return res.status(404).json({ error: 'Certification not found' });
-      }
-      // Return the certification details as JSON
-      res.json(certification);
-    } catch (error) {
-      console.error('Error fetching certification details:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
   
   app.post('/api/submit-contact', async (req, res) => {
   try {
