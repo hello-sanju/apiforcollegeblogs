@@ -197,7 +197,7 @@ const UserDetail = mongoose.model('userdetails', {
   });
 
 
-  const Career = mongoose.model('careers', {
+  const Journal = mongoose.model('journals', {
     title: String,
     overview: [String],
     description: [String],
@@ -216,7 +216,7 @@ const UserDetail = mongoose.model('userdetails', {
   });
 
 
-const FrontendDevelopmentCareerSchema = new mongoose.Schema({
+const VsCodeSchema = new mongoose.Schema({
   title: String,
   overview: [String],
   description: [String],
@@ -226,7 +226,7 @@ const FrontendDevelopmentCareerSchema = new mongoose.Schema({
 });
 
 // Define schema for CSS courses
-const BackendDevelopmentCareerSchema = new mongoose.Schema({
+const GitSchema = new mongoose.Schema({
   title: String,
   overview: [String],
   description: [String],
@@ -235,14 +235,14 @@ const BackendDevelopmentCareerSchema = new mongoose.Schema({
   videoURL: [String],
 });
 
-const FrontendDevelopmentCareers = mongoose.model('frontend_development_careers', FrontendDevelopmentCareerSchema);
+const VsCode = mongoose.model('vs_code', VsCodeSchema);
 
-const BackendDevelopmentCareers = mongoose.model('backend_development_careers', BackendDevelopmentCareerSchema);
+const Git = mongoose.model('git', GitSchema);
 
 // Export the models
 module.exports = {
-  FrontendDevelopmentCareers,
-  BackendDevelopmentCareers,
+  VsCode,
+  Git,
   
 };
 
@@ -287,25 +287,25 @@ app.get('/api/certifications/:title', async (req, res) => {
   });
   
  //new api for talks
-app.get('/api/:vision', async (req, res) => {
-  const { vision } = req.params;
+app.get('/api/:class', async (req, res) => {
+  const { class } = req.params;
   try {
     let talkContent;
     // Fetch course content based on the provided vision
-    switch (vision) {
-      case 'frontend_development_careers':
-        talkContent = await FrontendDevelopmentCareers.find().lean();
+    switch (class) {
+      case 'vs_code':
+        talkContent = await VsCode.find().lean();
         break;
-      case 'backend_development_careers':
-        talkContent = await BackendDevelopmentCareers.find().lean();
+      case 'git':
+        talkContent = await Git.find().lean();
         break;
       default:
         // Check if the vision matches any library in the database
-        const library = await mydb.collection(vision).find().toArray();
+        const library = await mydb.collection(class).find().toArray();
         if (library.length > 0) {
           talkContent = library;
         } else {
-          return res.status(404).json({ error: 'Vision not found' });
+          return res.status(404).json({ error: 'Class not found' });
         }
     }
 
@@ -315,24 +315,24 @@ app.get('/api/:vision', async (req, res) => {
       return res.status(404).json({ error: 'Talk not found' });
     }
   } catch (error) {
-    console.error('Error fetching course content:', error);
+    console.error('Error fetching journal content:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-app.get('/api/careers/vision/:vision', async (req, res) => {
+app.get('/api/class/:class', async (req, res) => {
   try {
-    const vision = req.params.vision;
-    if (vision === 'all') {
-      const career = await Career.find();
-      res.json(career);
+    const class = req.params.class;
+    if (class === 'all') {
+      const journal = await Journal.find();
+      res.json(journal);
     } else {
-      const career = await Career.find({ vision });
-      res.json(career);
+      const journal = await Journal.find({ class });
+      res.json(journal);
     }
   } catch (error) {
-    console.error('Error fetching career:', error);
-    res.status(500).json({ error: 'Error fetching career' });
+    console.error('Error fetching journal:', error);
+    res.status(500).json({ error: 'Error fetching journal' });
   }
 });
 
