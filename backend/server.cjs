@@ -287,12 +287,12 @@ app.get('/api/certifications/:title', async (req, res) => {
   });
   
  //new api for talks
-app.get('/api/:class', async (req, res) => {
-  const { class } = req.params;
+app.get('/api/:vision', async (req, res) => {
+  const { vision } = req.params;
   try {
     let talkContent;
     // Fetch course content based on the provided vision
-    switch (class) {
+    switch (vision) {
       case 'vs_code':
         talkContent = await VsCode.find().lean();
         break;
@@ -301,7 +301,7 @@ app.get('/api/:class', async (req, res) => {
         break;
       default:
         // Check if the vision matches any library in the database
-        const library = await mydb.collection(class).find().toArray();
+        const library = await mydb.collection(vision).find().toArray();
         if (library.length > 0) {
           talkContent = library;
         } else {
@@ -320,14 +320,14 @@ app.get('/api/:class', async (req, res) => {
   }
 });
 
-app.get('/api/class/:class', async (req, res) => {
+app.get('/api/vision/:vision', async (req, res) => {
   try {
-    const class = req.params.class;
-    if (class === 'all') {
+    const vision = req.params.vision;
+    if (vision === 'all') {
       const journal = await Journal.find();
       res.json(journal);
     } else {
-      const journal = await Journal.find({ class });
+      const journal = await Journal.find({ vision });
       res.json(journal);
     }
   } catch (error) {
