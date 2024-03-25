@@ -235,9 +235,9 @@ const GitSchema = new mongoose.Schema({
   videoURL: [String],
 });
 
-const VsCode = mongoose.model('vs_code', VsCodeSchema);
+const VsCode = mongoose.model('vs_code_articles', VsCodeSchema);
 
-const Git = mongoose.model('git', GitSchema);
+const Git = mongoose.model('git_articles', GitSchema);
 
 // Export the models
 module.exports = {
@@ -293,10 +293,10 @@ app.get('/api/:vision', async (req, res) => {
     let talkContent;
     // Fetch course content based on the provided vision
     switch (vision) {
-      case 'vs_code':
+      case 'vs_code_articles':
         talkContent = await VsCode.find().lean();
         break;
-      case 'git':
+      case 'git_articles':
         talkContent = await Git.find().lean();
         break;
       default:
