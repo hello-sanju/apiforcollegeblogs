@@ -235,9 +235,9 @@ const ChitkaraUniversitySchema = new mongoose.Schema({
   videoURL: [String],
 });
 
-const ChandigarhUniversity = mongoose.model('chandigarh-university-articles', VsCodeSchema);
+const ChandigarhUniversity = mongoose.model('chandigarh-university-articles', ChandigarhUniversitySchema);
 
-const ChitkaraUniversity = mongoose.model('chitkara-university-articles', GitSchema);
+const ChitkaraUniversity = mongoose.model('chitkara-university-articles', ChitkaraUniversitySchema);
 
 // Export the models
 module.exports = {
