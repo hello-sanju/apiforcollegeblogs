@@ -237,7 +237,7 @@ const ChitkaraUniversitySchema = new mongoose.Schema({
 
 const ChandigarhUniversity = mongoose.model('chandigarh-university-articles', VsCodeSchema);
 
-const ChitkaraUniversitySchema = mongoose.model('chitkara-university-articles', GitSchema);
+const ChitkaraUniversity = mongoose.model('chitkara-university-articles', GitSchema);
 
 // Export the models
 module.exports = {
