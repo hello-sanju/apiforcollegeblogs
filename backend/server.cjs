@@ -197,7 +197,7 @@ const UserDetail = mongoose.model('userdetails', {
   });
 
 
-  const Journal = mongoose.model('journals', {
+  const College = mongoose.model('colleges', {
     title: String,
     overview: [String],
     description: [String],
@@ -216,7 +216,7 @@ const UserDetail = mongoose.model('userdetails', {
   });
 
 
-const VsCodeSchema = new mongoose.Schema({
+const ChandigarhUniversitySchema = new mongoose.Schema({
   title: String,
   overview: [String],
   description: [String],
@@ -226,7 +226,7 @@ const VsCodeSchema = new mongoose.Schema({
 });
 
 // Define schema for CSS courses
-const GitSchema = new mongoose.Schema({
+const ChitkaraUniversitySchema = new mongoose.Schema({
   title: String,
   overview: [String],
   description: [String],
@@ -235,14 +235,14 @@ const GitSchema = new mongoose.Schema({
   videoURL: [String],
 });
 
-const VsCode = mongoose.model('vs_code_articles', VsCodeSchema);
+const ChandigarhUniversity = mongoose.model('chandigarh-university-articles', VsCodeSchema);
 
-const Git = mongoose.model('git_articles', GitSchema);
+const ChitkaraUniversitySchema = mongoose.model('chitkara-university-articles', GitSchema);
 
 // Export the models
 module.exports = {
-  VsCode,
-  Git,
+  ChandigarhUniversity,
+  ChitkaraUniversity,
   
 };
 
@@ -287,52 +287,52 @@ app.get('/api/certifications/:title', async (req, res) => {
   });
   
  //new api for talks
-app.get('/api/:vision', async (req, res) => {
-  const { vision } = req.params;
+app.get('/api/:institute', async (req, res) => {
+  const { institute } = req.params;
   try {
     let talkContent;
     // Fetch course content based on the provided vision
-    switch (vision) {
-      case 'vs_code_articles':
-        talkContent = await VsCode.find().lean();
+    switch (institute) {
+      case 'chandigarh-university-articles':
+        talkContent = await ChandigarhUniversity.find().lean();
         break;
-      case 'git_articles':
-        talkContent = await Git.find().lean();
+      case 'chitkara-university-articles':
+        talkContent = await ChitkaraUniversity.find().lean();
         break;
       default:
         // Check if the vision matches any library in the database
-        const library = await mydb.collection(vision).find().toArray();
+        const library = await mydb.collection(institute).find().toArray();
         if (library.length > 0) {
           talkContent = library;
         } else {
-          return res.status(404).json({ error: 'Class not found' });
+          return res.status(404).json({ error: 'Institute not found' });
         }
     }
 
     if (talkContent.length > 0) {
       return res.json(talkContent);
     } else {
-      return res.status(404).json({ error: 'Talk not found' });
+      return res.status(404).json({ error: 'Institute not found' });
     }
   } catch (error) {
-    console.error('Error fetching journal content:', error);
+    console.error('Error fetching Institute content:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-app.get('/api/vision/:vision', async (req, res) => {
+app.get('/api/institute/:institute', async (req, res) => {
   try {
-    const vision = req.params.vision;
-    if (vision === 'all') {
-      const journal = await Journal.find();
-      res.json(journal);
+    const institute = req.params.institute;
+    if (institute === 'all') {
+      const college = await College.find();
+      res.json(college);
     } else {
-      const journal = await Journal.find({ vision });
-      res.json(journal);
+      const college = await College.find({ institute });
+      res.json(college);
     }
   } catch (error) {
-    console.error('Error fetching journal:', error);
-    res.status(500).json({ error: 'Error fetching journal' });
+    console.error('Error fetching college:', error);
+    res.status(500).json({ error: 'Error fetching college' });
   }
 });
 
